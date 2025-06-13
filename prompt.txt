@@ -11,3 +11,10 @@ And hereafter are the related files within Armbian/mainline:
 - https://raw.githubusercontent.com/GammaKinematics/DTS-files/refs/heads/main/Armbian-mainline/sunxi-d1s-t113.dtsi
 - https://raw.githubusercontent.com/GammaKinematics/DTS-files/refs/heads/main/Armbian-mainline/mangopi_mq_r_defconfig
 Can you check all of these files and make sense of these references? Could you break down to me the key differences between sdk and mainline?
+
+I managed to get my way in adding dts files via the userpatch system and compile armbian with those custom trees, so that's a first step done.
+Now I will need to add the C906 co-processor in my tree so I can use it with RemoteProc and RPMsg for my T113-S4 SoC. It doesn't seem trivial, but I have a few references:
+- a snippet from the allwiner sdk's .dts introducing this core : https://raw.githubusercontent.com/GammaKinematics/DTS-files/refs/heads/main/C906/sdk.dts
+- a .dts from armbian/mainline of the D1S, introducing this C906 core: https://raw.githubusercontent.com/GammaKinematics/DTS-files/refs/heads/main/C906/sun20i-d1s.dtsi
+- Maybe you could find another example within armbian/mainline deploying the remoteproc/rpmsg stuff in a tree?
+Could you break down the differences between those 2 and help me draft a .dts to use this c906 with armbian?
