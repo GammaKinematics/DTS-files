@@ -1,0 +1,13 @@
+The end goal of my software development project is to program a custom board deploying the t113-s4 SoC from Allwinner. The board will have USB host/device, ethernet (via DP83825IRMQR phy) and possibly wifi via USB dongle, webcam via usb or CSI, touch pannel via DSI. There will also be various peripherals (uart/spi/i2c) related to CNC machine control. On the software side I will want a minimal linux (armbian) on the dual A7 cores of the chip and running either Klipper host or LinuxCNC (no RT related stuff, used in conjunction with Remora), as well as a bare-metal firmware (Klipper or Remora firmware) running on the c906 co-processor. This secondary c906 core should be manageable by the Linux host via RemoteProc and RPMsg.
+As a first step, I am trying to unstand the dts system to get a minimal bootable image (just basic uart and sd card with no c906 stuff, no peripherals etc) through armbian.The idea here is to build a custom .dts for my T113-S4 board, in a similar fashion than the sun8i-t113s-mangopi-mq-r-t113.dts for the T113-S3 based magopi mq r, to build with armbian by adding it in userpatches/.
+I have some reference from the allwinner SDK:
+- https://raw.githubusercontent.com/GammaKinematics/DTS-files/refs/heads/main/Allwiner%20SDK/evb1.dts
+- https://raw.githubusercontent.com/GammaKinematics/DTS-files/refs/heads/main/Allwiner%20SDK/sun8iw20p1.dtsi
+And hereafter are the related files within Armbian/mainline:
+- https://raw.githubusercontent.com/GammaKinematics/DTS-files/refs/heads/main/Armbian-mainline/sun8i-t113s-mangopi-mq-r-t113.dts
+- https://raw.githubusercontent.com/GammaKinematics/DTS-files/refs/heads/main/Armbian-mainline/sun8i-t113s.dtsi
+- https://raw.githubusercontent.com/GammaKinematics/DTS-files/refs/heads/main/Armbian-mainline/sunxi-d1-t113.dtsi
+- https://raw.githubusercontent.com/GammaKinematics/DTS-files/refs/heads/main/Armbian-mainline/sunxi-d1s-t113-mangopi-mq-r.dtsi
+- https://raw.githubusercontent.com/GammaKinematics/DTS-files/refs/heads/main/Armbian-mainline/sunxi-d1s-t113.dtsi
+- https://raw.githubusercontent.com/GammaKinematics/DTS-files/refs/heads/main/Armbian-mainline/mangopi_mq_r_defconfig
+Can you check all of these files and make sense of these references? Could you break down to me the key differences between sdk and mainline?

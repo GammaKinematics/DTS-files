@@ -1,0 +1,180 @@
+ reserved-memory {
+     #address-cells = <2>;
+     #size-cells = <2>;
+     ranges;
+
+     /* c906 */
+     c906_ddr: c906_ddr@42300000 {
+         reg = <0x0 0x42300000 0x0 0x00600000>;
+         no-map;
+     };
+     /*
+      * The name should be "vdev%dbuffer".
+      * Its size should be not less than
+      *     RPMSG_BUF_SIZE * (num of buffers in a vring) * 2
+      *   = 512 * (num of buffers in a vring) * 2
+      */
+     rv_vdev0buffer: vdev0buffer@42900000 {
+         compatible = "shared-dma-pool";
+         reg = <0x0 0x42900000 0x0 0x40000>;
+         no-map;
+     };
+
+     /*
+      * The name should be "vdev%dvring%d".
+      * The size of each should be not less than
+      *     PAGE_ALIGN(vring_size(num, align))
+      *   = PAGE_ALIGN(16 * num + 6 + 2 * num + (pads for align) + 6 + 8 * num)
+      *
+      * (Please refer to the vring layout in include/uapi/linux/virtio_ring.h)
+      */
+     rv_vdev0vring0: vdev0vring0@42940000 {
+         reg = <0x0 0x42940000 0x0 0x2000>;
+         no-map;
+     };
+     rv_vdev0vring1: vdev0vring1@42942000 {
+         reg = <0x0 0x42942000 0x0 0x2000>;
+         no-map;
+     };
+
+     /* dsp0 */
+     dsp0ddr: dsp0ddr@42000000 {
+         reg = <0x0 0x42000000 0x0 0x00100000>;
+         no-map;
+     };
+
+     dsp0_rpbuf_reserved: dsp0_rpbuf@42244000 {
+         compatible = "shared-dma-pool";
+         no-map;
+         reg = <0x0 0x42244000 0x0 0x8000>;
+     };
+
+     /*
+      * The name should be "vdev%dbuffer".
+      * Its size should be not less than
+      *     RPMSG_BUF_SIZE * (num of buffers in a vring) * 2
+      *   = 512 * (num of buffers in a vring) * 2
+      */
+     vdev0buffer: vdev0buffer@42200000 {
+         compatible = "shared-dma-pool";
+         reg = <0x0 0x42200000 0x0 0x40000>;
+         no-map;
+     };
+
+     /*
+      * The name should be "vdev%dvring%d".
+      * The size of each should be not less than
+      *     PAGE_ALIGN(vring_size(num, align))
+      *   = PAGE_ALIGN(16 * num + 6 + 2 * num + (pads for align) + 6 + 8 * num)
+      *
+      * (Please refer to the vring layout in include/uapi/linux/virtio_ring.h)
+      */
+     vdev0vring0: vdev0vring0@42240000 {
+         reg = <0x0 0x42240000 0x0 0x2000>;
+         no-map;
+     };
+     vdev0vring1: vdev0vring1@42242000 {
+         reg = <0x0 0x42242000 0x0 0x2000>;
+         no-map;
+     };
+
+     /*
+      * dsp ram addr
+      */
+     dsp0dram: dsp0dram@400000 {
+         reg = <0x0 0x400000 0x0 0x10000>;
+         no-map;
+     };
+     dsp0iram0: dsp0iram0@420000 {
+         reg = <0x0 0x420000 0x0 0x8000>;
+         no-map;
+     };
+     dsp0iram1: dsp0iram1@440000 {
+         reg = <0x0 0x440000 0x0 0x8000>;
+         no-map;
+     };
+ };
+
+ mailbox_heartbeat: mailbox_heartbeat@0 {
+     compatible = "mailbox-heartbeat";
+     rproc-np = <&c906_rproc>;
+     mboxes = <&msgbox 6>, <&msgbox 7>;
+     mbox-names = "tx", "rx";
+     status = "okay";
+ };
+
+ dsp0_rproc: dsp_rproc@0 {
+     compatible = "allwinner,hifi4-rproc", "simple-bus";
+     clock-frequency = <600000000>;
+     clocks = <&ccu CLK_PLL_PERIPH0_2X>, <&ccu CLK_DSP>, <&ccu CLK_BUS_DSP_CFG>, <&r_ccu CLK_R_AHB>;
+     clock-names = "pll", "mod", "cfg", "ahbs";
+     resets = <&ccu RST_BUS_DSP>, <&ccu RST_BUS_DSP_CFG>, <&ccu RST_BUS_DSP_DBG>, <&ccu RST_BUS_MSGBOX1>;
+     reset-names = "mod-rst", "cfg-rst", "dbg-rst", "msg-rst";
+     reg = <0x0 0x03000008 0x0 0x04>,
+     <0x0 0x01700000 0x0 0x40>;
+     reg-names = "sram-for-cpux", "hifi4-cfg";
+     mboxes = <&msgbox 0>;
+     mbox-names = "arm-kick";
+     memory-region = <&dsp0ddr>, <&vdev0buffer>, <&vdev0vring0>, <&vdev0vring1>,
+     <&dsp0dram>, <&dsp0iram0>, <&dsp0iram1>;
+     memory-mappings =
+     /* < DA		len		PA >	*/
+     /* local SRAM via external bus */
+     < 0x28000	0x20000		0x28000 >,
+     /* local SRAM via internal bus */
+     < 0x400000	0x10000		0x400000 >,
+     < 0x420000	0x8000		0x420000 >,
+     < 0x440000	0x8000		0x440000 >,
+     /* DDR front 256MB */
+     < 0x10000000	0x10000000	0x40000000 >,
+     /* local SRAM via internal bus */
+     < 0x20028000	0x10000		0x400000 >,
+     < 0x20038000	0x8000		0x420000 >,
+     < 0x20040000	0x8000		0x440000 >,
+     /* DDR front 256MB */
+     < 0x30000000	0x10000000	0x40000000 >,
+     /* DDR front 1GB */
+     < 0x40000000	0x40000000	0x40000000 >,
+     /* DDR front 1GB */
+     < 0x80000000	0x40000000	0x40000000 >,
+     /* DDR front 1GB */
+     < 0xC0000000	0x40000000	0x40000000 >;
+
+     id = <0>;
+     status = "okay";
+ };
+
+ rpbuf_controller0: rpbuf_controller@0 {
+     compatible = "allwinner,rpbuf-controller";
+     remoteproc = <&dsp0_rproc>;
+     ctrl_id = <0>;	/* index of /dev/rpbuf_ctrl */
+     //iommus = <&mmu_aw 5 1>;
+     memory-region = <&dsp0_rpbuf_reserved>;
+     status = "okay";
+ };
+
+ rpbuf_sample: rpbuf_sample@0 {
+     compatible = "allwinner,rpbuf-sample";
+     rpbuf = <&rpbuf_controller0>;
+     status = "okay";
+ };
+
+ c906_rproc: c906_rproc@0 {
+     compatible = "allwinner,c906-rproc";
+     clock-frequency = <800000000>;
+     clocks = <&ccu CLK_PLL_PERIPH0_800M>, <&ccu CLK_RISCV>, <&ccu CLK_BUS_RISCV_CFG>, <&ccu CLK_RISCV_RST>, <&ccu CLK_BUS_RISCV>;
+     clock-names = "pll", "mod", "cfg", "riscv-rst", "riscv-gate";
+     resets = <&ccu RST_BUS_RISCV_CFG>, <&ccu RST_BUS_MSGBOX2>;
+     reset-names = "cfg-rst", "msg-rst";
+     memory-region = <&c906_ddr>, <&rv_vdev0buffer>, <&rv_vdev0vring0>, <&rv_vdev0vring1>;
+     reg = <0x0 0x06010000 0x0 0x1000>;
+     reg-names = "c906-cfg";
+     mboxes = <&msgbox 4>;
+     mbox-names = "arm-kick";
+     memory-mappings =
+     /* DA 	         len         PA */
+     /* DDR for c906  */
+     < 0x40000000 0x10000000 0x40000000 >;
+     firmware-name = "amp_rv0.bin";
+     status = "okay";
+ };
